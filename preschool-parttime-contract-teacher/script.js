@@ -524,7 +524,7 @@ function calcMonthly() {
 
   if (start && end && end >= start) {
     const diff = diffDaysInclusive(start, end);
-    if (diff > 365 && totalDays > 0) {
+    if (diff >= 365 && totalDays > 0) {
       const avgDaily = (totalWageAll + totalAnnualAll) / totalDays;
       const raw = avgDaily * 30;
       const retirePay = floorTo10(raw);
@@ -787,4 +787,5 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDocGuide();
   }
 });
+
 
