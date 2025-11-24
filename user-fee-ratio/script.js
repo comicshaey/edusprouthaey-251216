@@ -35,14 +35,12 @@ const R_LONGTERM_ORG = 0.1295;
 const R_EMPLOY_EMP = 0.009;
 const R_EMPLOY_ORG = 0.0175;
 
-// 산재보험: 기관부담만 0.966%
+// 산재보험: 기관부담 0.966%
 const R_ACCIDENT_ORG = 0.00966;
 
-// 퇴직적립금: 보수월액의 1/12 근사치
-const R_RETIRE = 1 / 12;
-
-// 연차수당 증가분 비율 (통상임금 변동에 따른 대략값)
-const R_ANNUAL_LEAVE = 0.12;
+// 수익자부담금은 통상임금에서 제외 → 퇴직연금·연차수당 증가분 비율 사용 안 함
+// const R_RETIRE = 1 / 12;
+// const R_ANNUAL_LEAVE = 0.12;
 
 // ------------------------
 //   순환식 반복 계산
@@ -88,7 +86,10 @@ function calcCoachDistribution(studentCount, unitFee) {
   let healthEmp, healthOrg;
   let longtermEmp, longtermOrg;
   let employEmp, employOrg;
-  let accidentOrg, retirement, annualLeave;
+  let accidentOrg;
+  // 통상임금 미산입이므로 0 고정
+  let retirement = 0;
+  let annualLeave = 0;
   let totalDeductions, sumEmp, sumOrg;
 
   for (let i = 0; i < maxIter; i++) {
@@ -116,11 +117,7 @@ function calcCoachDistribution(studentCount, unitFee) {
     // 산재보험
     accidentOrg = round10(base * R_ACCIDENT_ORG);
 
-    // 퇴직적립금
-    retirement = round10(base * R_RETIRE);
-
-    // 연차수당 증가분
-    annualLeave = round10(base * R_ANNUAL_LEAVE);
+    // ★ 퇴직적립금 / 연차수당 증가분은 수익자부담금에서 제외이므로 계산하지 않고 0 유지
 
     // 개인부담금 합계 (사회보험 개인부담)
     sumEmp =
@@ -137,12 +134,11 @@ function calcCoachDistribution(studentCount, unitFee) {
       employOrg +
       accidentOrg;
 
-    // 공제합계 = 개인부담금 + 기관부담금 + 퇴직적립금 + 연차 미사용수당 증가분
+    // ★ 공제합계 = 사회보험 개인부담 + 사회보험 기관부담
+    //   (퇴직적립금 + 연차 미사용수당 증가분 제외)
     totalDeductions =
       sumEmp +
-      sumOrg +
-      retirement +
-      annualLeave;
+      sumOrg;
 
     totalDeductions = round10(totalDeductions);
 
@@ -167,8 +163,8 @@ function calcCoachDistribution(studentCount, unitFee) {
     employEmp,
     employOrg,
     accidentOrg,
-    retirement,
-    annualLeave,
+    retirement,   // 항상 0
+    annualLeave,  // 항상 0
     sumEmp,
     sumOrg,
     totalDeductions,
@@ -197,6 +193,7 @@ function updateView(result) {
 
   $("accidentOrg").textContent = formatWon(result.accidentOrg);
 
+  // UI에는 그대로 표시하되 값은 0원 (또는 계산 결과) 반영
   $("retirement").textContent = formatWon(result.retirement);
   $("annualLeave").textContent = formatWon(result.annualLeave);
 
