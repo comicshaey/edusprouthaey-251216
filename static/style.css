@@ -351,3 +351,21 @@ hr {
   font-size: 0.85rem;
   color: #555;
 }
+
+
+/* ===== 공통: 테이블이 가로폭 넘으면 자동 스크롤 ===== */
+.table-wrap,
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;  /* 모바일 부드러운 스크롤 */
+  margin-top: 12px;
+  padding-bottom: 4px; /* 스크롤바 숨김 방지 여백 */
+}
+
+/* 테이블 최소 너비 지정, 어휴 씨 되게 많네 */
+.table-wrap table,
+.table-wrapper table {
+  min-width: 800px; /* 기본값, 필요하면 조정 가능 */
+  border-collapse: collapse;
+}
