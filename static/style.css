@@ -1,492 +1,421 @@
-// 간단 셀렉터/포맷
-const $ = (sel) => document.querySelector(sel);
-const fmt = (n) => Number(n || 0).toLocaleString("ko-KR");
+/* 251123 공통 스타일 */
 
-// 날짜 유틸
-const ymd = (d) => {
-  const z = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
-};
+/* 박스 모델 통일 */
+* {
+  box-sizing: border-box;
+}
 
-const parseDate = (v) => {
-  if (!v) return null;
-  const [y, m, d] = v.split("-").map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d);
-};
+/* 기본 타이포 & 배경 */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #111;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Apple SD Gothic Neo", "Noto Sans KR", "맑은 고딕", sans-serif;
+  line-height: 1.5;
+  word-break: keep-all;
+}
 
-const addDays = (d, n) => {
-  const x = new Date(d);
-  x.setDate(x.getDate() + n);
-  return x;
-};
+/* 링크 기본 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
 
-const isSameOrBefore = (a, b) => a.getTime() <= b.getTime();
-const isSameOrAfter = (a, b) => a.getTime() >= b.getTime();
+/* 공통 컨테이너 */
+.shell {
+  max-width: 880px;
+  margin: 0 auto;
+}
 
-// 십원 단위 절삭
-const floor10 = (n) => Math.floor(n / 10) * 10;
+/* 모든 페이지 공통: 내용 영역 */
+main {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
 
-// JS Date → 한국식 요일 번호(월=1, …, 일=7)
-const dayToKoreaNum = (d) => {
-  const w = d.getDay(); // 일=0, …, 토=6
-  return w === 0 ? 7 : w;
-};
+/* 부제 */
+.sub {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  color: #555;
+}
 
-// "주" 구분용 키 (해당 날짜가 속한 주의 월요일 날짜 기반)
-const weekKeyMonToSun = (d) => {
-  const x = new Date(d);
-  const dow = x.getDay(); // 일=0, 월=1, …
-  const diffToMon = dow === 0 ? -6 : 1 - dow;
-  const monday = addDays(x, diffToMon);
+/* 상단 헤더 */
+.site-header {
+  background: #fff;
+  border-bottom: 1px solid #e8e8ef;
+}
 
-  const mm = String(monday.getMonth() + 1).padStart(2, "0");
-  const dd = String(monday.getDate()).padStart(2, "0");
-  return `${monday.getFullYear()}-W${mm}${dd}`;
-};
+.site-header .shell {
+  padding: 16px;
+}
 
-const nextWeekKeyOf = (weekKey) => {
-  const m = weekKey.match(/(\d{4})-W(\d{2})(\d{2})/);
-  if (!m) return "";
-  const y = Number(m[1]);
-  const mm = Number(m[2]);
-  const dd = Number(m[3]);
+.site-header h1 {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+}
 
-  const mon = new Date(y, mm - 1, dd);
-  const nextMon = addDays(mon, 7);
+/* 섹션 카드 */
+.section {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 18px 0;
+  background: #fff;
+}
 
-  const nmm = String(nextMon.getMonth() + 1).padStart(2, "0");
-  const ndd = String(nextMon.getDate()).padStart(2, "0");
-  return `${nextMon.getFullYear()}-W${nmm}${ndd}`;
-};
+.section h2 {
+  font-size: 1.2rem;
+  margin: 0 0 12px;
+}
 
-const groupBy = (arr, keyFn) => {
-  const m = {};
-  for (const it of arr) {
-    const k = keyFn(it);
-    if (!m[k]) m[k] = [];
-    m[k].push(it);
-  }
-  return m;
-};
+/* 설명 텍스트 */
+.muted {
+  color: #555;
+  font-size: 0.95rem;
+}
 
-// "HH:MM" → 분 단위 숫자
-const parseTimeToMinutes = (s) => {
-  if (!s) return null;
-  const parts = s.split(":");
-  if (parts.length !== 2) return null;
-  const h = Number(parts[0]);
-  const m = Number(parts[1]);
-  if (Number.isNaN(h) || Number.isNaN(m)) return null;
-  return h * 60 + m;
-};
+/* 내부 카드 */
+.card {
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 10px 0;
+  background: #fafafa;
+}
 
-// ---------------- 공휴일 관련 ----------------
+/* ==== 레이아웃 유틸 ==== */
 
-// 매년 날짜가 고정된 양력 공휴일 (모든 연도 자동 반영)
-const FIXED_SOLAR_HOLIDAYS = [
-  "01-01", // 신정
-  "03-01", // 삼일절
-  "05-05", // 어린이날
-  "06-06", // 현충일
-  "08-15", // 광복절
-  "10-03", // 개천절
-  "10-09", // 한글날
-  "12-25", // 성탄절
-];
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-// 연도별 개별 공휴일/대체공휴일/임시공휴일/음력휴일
-// 필요할 때 여기 연도별로 계속 추가하면 됨.
-const EXTRA_YEARLY_HOLIDAYS = {
-  2025: [
-    // 설 연휴 + 임시공휴일
-    "2025-01-27",
-    "2025-01-28",
-    "2025-01-29",
-    "2025-01-30",
-    // 삼일절 대체공휴일
-    "2025-03-03",
-    // 어린이날·부처님오신날 대체공휴일
-    "2025-05-06",
-    // 대통령선거(임시공휴일)
-    "2025-06-03",
-    // 추석 연휴 + 대체공휴일
-    "2025-10-05",
-    "2025-10-06",
-    "2025-10-07",
-    "2025-10-08",
-  ],
-  // 예: 2026: ["2026-02-xx", ...] 이런 식으로 추가
-};
+.row.between {
+  justify-content: space-between;
+}
 
-// 기간 내 자동 공휴일 집합 만들기
-// 1) FIXED_SOLAR_HOLIDAYS 는 연도 상관없이 전부 자동
-// 2) EXTRA_YEARLY_HOLIDAYS 에 적힌 건 해당 연도에 한해 추가
-const getAutoHolidays = (start, end) => {
-  const set = new Set();
-  if (!(start && end)) return set;
+.row.gap {
+  gap: 10px;
+}
 
-  const startYear = start.getFullYear();
-  const endYear = end.getFullYear();
+.grid {
+  display: grid;
+  gap: 12px;
+}
 
-  for (let y = startYear; y <= endYear; y++) {
-    // 양력 고정 공휴일
-    for (const md of FIXED_SOLAR_HOLIDAYS) {
-      const ds = `${y}-${md}`;
-      const dt = parseDate(ds);
-      if (!dt) continue;
-      if (isSameOrAfter(dt, start) && isSameOrBefore(dt, end)) {
-        set.add(ds);
-      }
-    }
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
 
-    // 연도별 추가 휴일
-    const extra = EXTRA_YEARLY_HOLIDAYS[y];
-    if (extra && extra.length > 0) {
-      for (const ds of extra) {
-        const dt = parseDate(ds);
-        if (!dt) continue;
-        if (isSameOrAfter(dt, start) && isSameOrBefore(dt, end)) {
-          set.add(ds);
-        }
-      }
-    }
-  }
-  return set;
-};
+.grid.three {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
 
-// ---------------- 요일 입력 관련 ----------------
-
-const DAY_IDS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-const DAY_HOUR_IDS = {
-  mon: "#monHours",
-  tue: "#tueHours",
-  wed: "#wedHours",
-  thu: "#thuHours",
-  fri: "#friHours",
-  sat: "#satHours",
-  sun: "#sunHours",
-};
-const DAY_TIME_IDS = {
-  mon: { start: "#monStart", end: "#monEnd" },
-  tue: { start: "#tueStart", end: "#tueEnd" },
-  wed: { start: "#wedStart", end: "#wedEnd" },
-  thu: { start: "#thuStart", end: "#thuEnd" },
-  fri: { start: "#friStart", end: "#friEnd" },
-  sat: { start: "#satStart", end: "#satEnd" },
-  sun: { start: "#sunStart", end: "#sunEnd" },
-};
-
-// ---------------- 메인 계산 ----------------
-
-const calc = () => {
-  const start = parseDate($("#startDate")?.value);
-  const end = parseDate($("#endDate")?.value);
-  const hourly = Number($("#hourlyWage")?.value) || 0;
-
-  // 휴게시간
-  const breakEnabled = $("#breakEnabled")?.checked || false;
-  const breakMinutes = Number($("#breakMinutes")?.value) || 0;
-  const breakHours = breakEnabled ? Math.max(0, breakMinutes / 60) : 0;
-
-  // 추가 제외일 입력값 파싱
-  const excludeRaw = $("#excludeDates")?.value || "";
-  const manualExcludeSet = new Set(
-    excludeRaw
-      .split(/[\s,]+/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0)
-  );
-
-  // 공휴일 자동 반영 여부
-  const autoHolidayEnabled = $("#autoHoliday")?.checked || false;
-  const autoHolidaySet = autoHolidayEnabled ? getAutoHolidays(start, end) : new Set();
-
-  // 입력 방식 (시간 / 시각)
-  const mode =
-    document.querySelector('input[name="timeInputMode"]:checked')?.value ||
-    "hours";
-
-  // 요일별 패턴(소정근로시간) 읽기
-  const workPlan = {};
-  for (const id of DAY_IDS) {
-    const checked = $(`#${id}`)?.checked || false;
-    let rawHrs = 0;
-
-    if (checked) {
-      if (mode === "hours") {
-        // 직접 시간 입력 (예: 4.5시간)
-        rawHrs = Number($(DAY_HOUR_IDS[id])?.value) || 0;
-      } else {
-        // 시각 입력 (예: 09:30 ~ 14:00)
-        const tIds = DAY_TIME_IDS[id];
-        const startStr = $(tIds.start)?.value || "";
-        const endStr = $(tIds.end)?.value || "";
-        const sMin = parseTimeToMinutes(startStr);
-        const eMin = parseTimeToMinutes(endStr);
-
-        if (sMin != null && eMin != null && eMin > sMin) {
-          rawHrs = (eMin - sMin) / 60; // 분 → 시간
-        } else {
-          rawHrs = 0;
-        }
-      }
-    }
-
-    const paidHrs = checked ? Math.max(0, rawHrs - breakHours) : 0; // 휴게 차감 후 유급시간
-    workPlan[id] = { checked, rawHrs, paidHrs };
+@media (max-width: 640px) {
+  .row {
+    flex-wrap: wrap;
+    align-items: flex-start;
   }
 
-  // 기본 검증
-  if (!(start && end && isSameOrBefore(start, end))) {
-    showResult({ msg: "기간을 확인해줘" });
-    return;
+  .grid.two,
+  .grid.three {
+    grid-template-columns: 1fr;
   }
-  if (hourly <= 0) {
-    showResult({ msg: "시급을 확인해줘" });
-    return;
+}
+
+/* 버튼 기본 */
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #222;
+  color: #111;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #fff;
+  cursor: pointer;
+}
+
+.btn + .btn {
+  margin-left: 10px;
+}
+
+.btn:hover {
+  background: #f3f4f6;
+}
+
+/* 프라이머리 버튼 */
+.btn.primary {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+}
+
+.btn.primary:hover {
+  background: #000;
+}
+
+/* 고스트 버튼 */
+.btn.ghost {
+  background: #f9fafb;
+  border-color: #d4d4d8;
+  color: #111;
+}
+
+.btn.ghost:hover {
+  background: #eef2ff;
+}
+
+/* 설명 텍스트 */
+.btn-desc {
+  font-size: 0.9rem;
+  margin: 6px 0 18px 0;
+  color: #333;
+}
+
+/* 연한 회색 버튼 */
+.btn-lightgrey {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  border: 1px solid #d4d4d8;
+  color: #111;
+}
+
+/* 링크 한 줄 정렬 — 왼쪽 정렬 확정 */
+.link-row {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column; /* 버튼 위, 설명 아래 */
+  align-items: flex-start; /* ← 왼쪽 정렬 */
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .link-row {
+    align-items: flex-start;
   }
-  const anyChecked = DAY_IDS.some(
-    (id) => workPlan[id].checked && workPlan[id].rawHrs > 0
-  );
-  if (!anyChecked) {
-    showResult({ msg: "근무 요일과 시간을 입력해줘" });
-    return;
-  }
+}
 
-  // "주 소정 근무시간"은 패턴 기준(한 주에 월~일 계획만 합산, 제외일과 무관)
-  const weeklyRaw = DAY_IDS.reduce(
-    (sum, id) => sum + (workPlan[id].checked ? workPlan[id].rawHrs : 0),
-    0
-  );
-  const weeklyPaidPattern = DAY_IDS.reduce(
-    (sum, id) => sum + (workPlan[id].checked ? workPlan[id].paidHrs : 0),
-    0
-  );
+/* 메인으로 돌아가기 버튼 그룹 */
+.home-link-wrap {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  text-align: left !important;
+}
 
-  // 기간 내 실제 날짜별 레코드 구성
-  const mapIdxToKey = ["", "mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-  const daysArr = [];
-  let excludedCount = 0;
+/* 메인으로 돌아가기 버튼 */
+.btn-home {
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #f9fafb;
+  font-size: 0.9rem;
+}
 
-  for (let d = new Date(start); isSameOrBefore(d, end); d = addDays(d, 1)) {
-    const dateStr = ymd(d);
+.btn-home:hover {
+  background: #eef2ff;
+}
 
-    const isManualExcluded = manualExcludeSet.has(dateStr);
-    const isAutoHoliday = autoHolidaySet.has(dateStr);
-    const isExcluded = isManualExcluded || isAutoHoliday;
+/* 푸터 */
+.site-footer {
+  border-top: 1px solid #e8e8ef;
+  margin-top: 32px;
+  padding: 16px 0 20px;
+  color: #444;
+  font-size: 0.85rem;
+}
 
-    const kn = dayToKoreaNum(d);
-    const key = mapIdxToKey[kn];
-    const plan = workPlan[key];
+.site-footer p {
+  margin: 4px 0;
+}
 
-    // 원래 패턴상 소정근로일인지
-    const isScheduledBase = !!(plan && plan.checked && plan.rawHrs > 0);
-    // 제외일(공휴일 포함)은 소정근로일에서 빼준다
-    const scheduledWork = isScheduledBase && !isExcluded;
+/* ===== 입력 UI 리디자인 ===== */
 
-    let paid = 0;
-    if (scheduledWork) {
-      paid = plan.paidHrs;
-    }
+input,
+select,
+button,
+textarea {
+  font: inherit;
+}
 
-    if (isExcluded) {
-      excludedCount += 1;
-    }
+input[type="text"],
+input[type="number"],
+input[type="time"],
+input[type="date"],
+select,
+textarea {
+  padding: 10px 12px;
+  border: 1px solid #d9d9e3;
+  border-radius: 12px;
+  background: #f9fafb;
+  outline: none;
+  min-width: 0;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
 
-    daysArr.push({
-      date: new Date(d),
-      ymd: dateStr,
-      weekNoKey: weekKeyMonToSun(d),
-      isSunday: kn === 7,
-      scheduledWork,   // 해당 날짜가 '그 주의 소정 근로일'인지(제외일 반영 후)
-      paidHours: paid, // 유급근로시간
-    });
-  }
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="time"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #b4b4d0;
+  box-shadow: 0 0 0 2px rgba(180, 180, 208, 0.25);
+  background: #fff;
+}
 
-  // 실근로일 수
-  const workDayCount = daysArr.filter((it) => it.paidHours > 0).length;
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f6f7fb;
+  color: #888;
+}
 
-  // 기본급 = 유급시간 합계 × 시급
-  const baseHours = daysArr.reduce((sum, it) => sum + it.paidHours, 0);
-  const basePay = floor10(baseHours * hourly);
+input[type="radio"] {
+  vertical-align: middle;
+  margin-top: -2px;
+}
 
-  // 주휴수당 계산 (3요건 자동 적용)
-  const weeks = groupBy(daysArr, (it) => it.weekNoKey);
-  let jhuRawSum = 0;
-  let jhuDaysCount = 0;
+/* 숫자/정렬 유틸 */
+.numeric {
+  text-align: right;
+}
 
-  for (const wkKey of Object.keys(weeks)) {
-    const wk = weeks[wkKey];
+.right {
+  text-align: right;
+}
 
-    const weeklyHours = wk.reduce((sum, it) => sum + it.paidHours, 0);
-    const weeklyScheduledDays = wk.filter((it) => it.scheduledWork).length;
-    const weeklyActualWorkDays = wk.filter((it) => it.paidHours > 0).length;
+.center {
+  text-align: center;
+}
 
-    // 요건 1: 주당 근무시간 15시간 이상 (실제 유급시간 기준)
-    const cond1 = weeklyHours >= 15;
+/* h1 중앙 정렬 */
+h1 {
+  text-align: center !important;
+}
 
-    // 요건 2: 해당 주간 소정 근로일 모두 근무
-    const cond2 =
-      weeklyScheduledDays > 0 &&
-      weeklyScheduledDays === weeklyActualWorkDays;
+/* 구분선 */
+hr {
+  border: none;
+  border-top: 1px solid #ddd;
+  margin: 28px 0;
+}
 
-    // 요건 3: 다음 주에 근무 예정(소정근로일 존재)
-    const nextKey = nextWeekKeyOf(wkKey);
-    const nextWeek = weeks[nextKey];
-    const hasNextScheduled =
-      !!nextWeek && nextWeek.some((it) => it.scheduledWork);
-    const cond3 = hasNextScheduled;
+/* ===== 테이블 공통 ===== */
 
-    // 해당 주에 '일요일'이 달력상 존재하는지 (계약 기간 안에서)
-    const sundayInside = wk.some(
-      (it) =>
-        it.isSunday &&
-        isSameOrAfter(it.date, start) &&
-        isSameOrBefore(it.date, end)
-    );
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
-    if (cond1 && cond2 && cond3 && sundayInside) {
-      // 1일 평균 유급시간 × 시급 = 주휴 1일분
-      const avgDailyPaidHrs =
-        weeklyActualWorkDays > 0
-          ? weeklyHours / weeklyActualWorkDays
-          : 0;
-      jhuRawSum += avgDailyPaidHrs * hourly;
-      jhuDaysCount += 1;
-    }
-  }
+.table-wrap table {
+  border-collapse: collapse;
+  min-width: 1100px;
+}
 
-  const jhuPay = floor10(jhuRawSum);
+/* 시트 스타일 */
+.sheetlike {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  background: #fff;
+}
 
-  // 총액
-  const total = basePay + jhuPay;
+.sheetlike th,
+.sheetlike td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+}
 
-  // 예산(기본급 / 주휴수당 분리)
-  const budgetBase = Number($("#budgetBase")?.value) || 0;
-  const budgetJhu = Number($("#budgetJhu")?.value) || 0;
+.sheetlike th {
+  background: #f9fafb;
+  font-weight: 600;
+}
 
-  const remainBase = budgetBase - basePay;
-  const remainJhu = budgetJhu - jhuPay;
+/* 비고 */
+.note {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #555;
+}
 
-  showResult({
-    basePay,
-    jhuPay,
-    total,
-    workDays: workDayCount,
-    jhuDays: jhuDaysCount,
-    weeklyRaw,
-    weeklyPaid: weeklyPaidPattern,
-    excludedDays: excludedCount,
-    remainBase,
-    remainJhu,
-    msg: "",
-  });
-};
 
-// ---------------- 결과 표시 ----------------
+/* ===== 공통: 테이블이 가로폭 넘으면 자동 스크롤 ===== */
+.table-wrap,
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;  /* 모바일 부드러운 스크롤 */
+  margin-top: 12px;
+  padding-bottom: 4px; /* 스크롤바 숨김 방지 여백 */
+}
 
-const showResult = (o) => {
-  const {
-    basePay = 0,
-    jhuPay = 0,
-    total = 0,
-    workDays = 0,
-    jhuDays = 0,
-    weeklyRaw = 0,
-    weeklyPaid = 0,
-    excludedDays = 0,
-    remainBase = 0,
-    remainJhu = 0,
-    msg = "",
-  } = o || {};
+/* 테이블 최소 너비 지정, 어휴 씨 되게 많네 */
+.table-wrap table,
+.table-wrapper table {
+  min-width: 800px; /* 기본값, 필요하면 조정 가능 */
+  border-collapse: collapse;
+}
 
-  const paidDays = workDays + jhuDays;
 
-  const lineEl = $("#outDaysLine");
-  if (lineEl) {
-    const parts = [];
-    parts.push(`실근로일 ${workDays}일`);
-    parts.push(`유급주휴일 ${jhuDays}일`);
-    if (excludedDays > 0) parts.push(`제외일(공휴일 포함) ${excludedDays}일`);
-    lineEl.textContent = parts.join(" · ") + ` → 총 ${paidDays}일 유급`;
-  }
 
-  const set = (sel, val) => {
-    const el = $(sel);
-    if (el) el.textContent = fmt(val);
-  };
+/* =========================================
+   ★ 전역 레이아웃 통일 패치 (251126)
+   header / main / footer 모두 동일 폭 사용
+   ========================================= */
 
-  set("#outWeeklyRaw", weeklyRaw);
-  set("#outWeeklyPaid", weeklyPaid);
-  set("#outBase", basePay);
-  set("#outJhu", jhuPay);
-  set("#outTotal", total);
-  set("#outRemainBase", remainBase);
-  set("#outRemainJhu", remainJhu);
+/* header, footer도 shell 폭(880px) 안에 정렬 */
+.site-header .shell,
+.site-footer .shell {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 16px;  /* main과 동일 여백 */
+}
 
-  const msgEl = $("#outMsg");
-  if (msgEl) msgEl.textContent = msg || "";
+/* 메인으로 돌아가기 버튼도 shell 분위기와 통일 */
+.home-link-wrap {
+  max-width: 880px;
+  margin: 16px auto 0;
+  padding: 0 16px;
+  display: flex;
+  justify-content: flex-start;   /* 가운데 → 왼쪽 정렬 */
+  flex-wrap: wrap;               /* 넘치면 자동 줄바꿈 */
+  gap: 8px;
+}
 
-  // 잔액 마이너스 색상 처리
-  const rb = $("#outRemainBase");
-  if (rb) {
-    rb.style.color = remainBase < 0 ? "red" : "#111";
-    rb.style.fontWeight = remainBase < 0 ? "700" : "500";
-  }
-  const rj = $("#outRemainJhu");
-  if (rj) {
-    rj.style.color = remainJhu < 0 ? "red" : "#111";
-    rj.style.fontWeight = remainJhu < 0 ? "700" : "500";
-  }
-};
+/* 메인으로 돌아가기 버튼이 좁은 화면에서 깨지지 않게 */
+.btn-home {
+  white-space: nowrap;          /* 버튼 줄바꿈 방지 */
+  flex-shrink: 0;               /* 폭 부족해도 눌리지 않게 */
+}
 
-// ---------------- DOM 로드 후 바인딩 ----------------
+/* 모든 table-wrapper, table-wrap 의 폭도 shell 안에서 통일 */
+.table-wrapper,
+.table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 12px 0;
+  padding-bottom: 6px;
+}
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 기본 모드: 시간
-  document.body.classList.add("mode-hours");
+/* 내부 테이블은 최소 너비 확보 (내용 늘어나면 스크롤) */
+.table-wrapper table,
+.table-wrap table {
+  min-width: 800px; /* 필요하면 1000~1200px로 조정 가능 */
+  border-collapse: collapse;
+}
 
-  // 모드 토글(시간 / 시각)
-  const modeRadios = document.querySelectorAll('input[name="timeInputMode"]');
-  modeRadios.forEach((r) => {
-    r.addEventListener("change", () => {
-      const v =
-        document.querySelector('input[name="timeInputMode"]:checked')?.value ||
-        "hours";
-      document.body.classList.toggle("mode-hours", v === "hours");
-      document.body.classList.toggle("mode-range", v === "range");
-    });
-  });
-
-  const btn = $("#btnCalc");
-  if (btn) {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      calc();
-    });
-  }
-
-  // 요일 체크 해제 시 시간 0으로 세팅(시간 모드 기준)
-  const pairs = [
-    ["mon", "#monHours"],
-    ["tue", "#tueHours"],
-    ["wed", "#wedHours"],
-    ["thu", "#thuHours"],
-    ["fri", "#friHours"],
-    ["sat", "#satHours"],
-    ["sun", "#sunHours"],
-  ];
-
-  for (const [id, sel] of pairs) {
-    const box = $(`#${id}`);
-    const inp = $(sel);
-    if (box && inp) {
-      box.addEventListener("change", () => {
-        if (!box.checked) {
-          inp.value = 0;
-        }
-      });
-    }
-  }
-});
