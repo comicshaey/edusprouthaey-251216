@@ -1,4 +1,4 @@
-/* 251123 공통 스타일 */
+/* 251204목 공통 스타일 */
 
 /* 박스 모델 통일 */
 * {
@@ -23,6 +23,45 @@ a {
   text-decoration: none;
   color: inherit;
 }
+
+/* ---------------------------
+   전역 헤딩/텍스트 스타일
+   --------------------------- */
+h1 {
+  font-size: 2.0rem;
+  margin: 18px 0 14px;
+  text-align: center !important;
+}
+
+h2 {
+  font-size: 1.6rem;
+  margin: 0 0 12px;
+  color: #222;
+}
+
+h3 {
+  font-size: 1.4rem;
+  margin: 0 0 11px;
+  color: #222;
+}
+
+h4 {
+  font-size: 1.2rem;
+  margin: 0 0 10px;
+  color: #333;
+}
+
+p {
+  line-height: 1.65;
+  margin: 10px 0;
+  color: #333;
+}
+
+.muted {
+  color: #666;
+  font-size: 0.9rem;
+}
+/* --------------------------- */
 
 /* 공통 컨테이너 */
 .shell {
@@ -66,17 +105,6 @@ main {
   padding: 16px 18px;
   margin: 18px 0;
   background: #fff;
-}
-
-.section h2 {
-  font-size: 1.2rem;
-  margin: 0 0 12px;
-}
-
-/* 설명 텍스트 */
-.muted {
-  color: #555;
-  font-size: 0.95rem;
 }
 
 /* 내부 카드 */
@@ -172,7 +200,7 @@ main {
   background: #eef2ff;
 }
 
-/* 설명 텍스트 */
+/* 버튼 설명 텍스트 */
 .btn-desc {
   font-size: 0.9rem;
   margin: 6px 0 18px 0;
@@ -189,12 +217,12 @@ main {
   color: #111;
 }
 
-/* 링크 한 줄 정렬 — 왼쪽 정렬 확정 */
+/* 링크 한 줄 정렬 */
 .link-row {
   margin-top: 8px;
   display: flex;
   flex-direction: column; /* 버튼 위, 설명 아래 */
-  align-items: flex-start; /* ← 왼쪽 정렬 */
+  align-items: flex-start; /* 왼쪽 정렬 */
   gap: 8px;
 }
 
@@ -206,12 +234,13 @@ main {
 
 /* 메인으로 돌아가기 버튼 그룹 */
 .home-link-wrap {
-  margin-top: 16px;
+  max-width: 880px;
+  margin: 16px auto 0;
+  padding: 0 16px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
-  text-align: left !important;
 }
 
 /* 메인으로 돌아가기 버튼 */
@@ -222,6 +251,8 @@ main {
   border-radius: 999px;
   background: #f9fafb;
   font-size: 0.9rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .btn-home:hover {
@@ -301,11 +332,6 @@ input[type="radio"] {
   text-align: center;
 }
 
-/* h1 중앙 정렬 */
-h1 {
-  text-align: center !important;
-}
-
 /* 구분선 */
 hr {
   border: none;
@@ -315,15 +341,30 @@ hr {
 
 /* ===== 테이블 공통 ===== */
 
-.table-wrap {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+/* 비고 */
+.note {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #555;
 }
 
-.table-wrap table {
+/* 공통 테이블 래퍼 */
+/* 테이블이 가로폭 넘으면 자동 스크롤 (어휴 씨 되게 많네) */
+.table-wrap,
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;  /* 모바일 부드러운 스크롤 */
+  margin: 12px 0;
+  padding-bottom: 6px; /* 스크롤바 숨김 방지 여백 */
+}
+
+/* 내부 테이블은 최소 너비 확보 (내용 늘어나면 스크롤) */
+.table-wrap table,
+.table-wrapper table {
+  min-width: 800px; /* 필요하면 1000~1200px로 조정 가능 */
   border-collapse: collapse;
-  min-width: 1100px;
 }
 
 /* 시트 스타일 */
@@ -345,77 +386,14 @@ hr {
   font-weight: 600;
 }
 
-/* 비고 */
-.note {
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-
-/* ===== 공통: 테이블이 가로폭 넘으면 자동 스크롤 ===== */
-.table-wrap,
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;  /* 모바일 부드러운 스크롤 */
-  margin-top: 12px;
-  padding-bottom: 4px; /* 스크롤바 숨김 방지 여백 */
-}
-
-/* 테이블 최소 너비 지정, 어휴 씨 되게 많네 */
-.table-wrap table,
-.table-wrapper table {
-  min-width: 800px; /* 기본값, 필요하면 조정 가능 */
-  border-collapse: collapse;
-}
-
-
-
 /* =========================================
-   ★ 전역 레이아웃 통일 패치 (251126)
+   전역 레이아웃 통일 패치 (251126)
    header / main / footer 모두 동일 폭 사용
    ========================================= */
 
-/* header, footer도 shell 폭(880px) 안에 정렬 */
 .site-header .shell,
 .site-footer .shell {
   max-width: 880px;
   margin: 0 auto;
   padding: 0 16px;  /* main과 동일 여백 */
 }
-
-/* 메인으로 돌아가기 버튼도 shell 분위기와 통일 */
-.home-link-wrap {
-  max-width: 880px;
-  margin: 16px auto 0;
-  padding: 0 16px;
-  display: flex;
-  justify-content: flex-start;   /* 가운데 → 왼쪽 정렬 */
-  flex-wrap: wrap;               /* 넘치면 자동 줄바꿈 */
-  gap: 8px;
-}
-
-/* 메인으로 돌아가기 버튼이 좁은 화면에서 깨지지 않게 */
-.btn-home {
-  white-space: nowrap;          /* 버튼 줄바꿈 방지 */
-  flex-shrink: 0;               /* 폭 부족해도 눌리지 않게 */
-}
-
-/* 모든 table-wrapper, table-wrap 의 폭도 shell 안에서 통일 */
-.table-wrapper,
-.table-wrap {
-  max-width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin: 12px 0;
-  padding-bottom: 6px;
-}
-
-/* 내부 테이블은 최소 너비 확보 (내용 늘어나면 스크롤) */
-.table-wrapper table,
-.table-wrap table {
-  min-width: 800px; /* 필요하면 1000~1200px로 조정 가능 */
-  border-collapse: collapse;
-}
-
